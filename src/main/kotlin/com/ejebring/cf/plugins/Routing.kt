@@ -2,7 +2,10 @@ package com.ejebring.cf.plugins
 
 import io.ktor.http.HttpStatusCode
 import io.ktor.resources.*
+import io.ktor.serialization.gson.gson
+import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.*
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.request.receive
 import io.ktor.server.resources.*
 import io.ktor.server.resources.Resources
@@ -13,6 +16,11 @@ import kotlinx.serialization.Serializable
 
 fun Application.configureRouting() {
     install(Resources)
+    install(ContentNegotiation) {
+        gson {
+        }
+        json()
+    }
     routing {
         get("/") {
             call.respondText("Hello World!")

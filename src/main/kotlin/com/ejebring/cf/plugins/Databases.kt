@@ -5,13 +5,12 @@ import com.ejebring.cf.UserService
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
-import io.ktor.server.resources.Resources
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.jetbrains.exposed.sql.*
 
 fun Application.configureDatabases() {
-    install(Resources)
+    //install(Resources)
     val database = Database.connect(
         url = "jdbc:sqlite:sample.db",
         driver = "org.sqlite.JDBC",
