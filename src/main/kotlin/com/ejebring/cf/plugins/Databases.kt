@@ -1,18 +1,20 @@
 package com.ejebring.cf.plugins
 
+import com.ejebring.cf.ExposedUser
+import com.ejebring.cf.UserService
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
+import io.ktor.server.resources.Resources
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.jetbrains.exposed.sql.*
 
 fun Application.configureDatabases() {
+    install(Resources)
     val database = Database.connect(
-        url = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1",
-        user = "root",
-        driver = "org.h2.Driver",
-        password = "",
+        url = "jdbc:sqlite:sample.db",
+        driver = "org.sqlite.JDBC",
     )
     val userService = UserService(database)
     routing {
@@ -33,7 +35,6 @@ fun Application.configureDatabases() {
                 call.respond(HttpStatusCode.NotFound)
             }
         }
-
         // Update user
         put("/users/{id}") {
             val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
