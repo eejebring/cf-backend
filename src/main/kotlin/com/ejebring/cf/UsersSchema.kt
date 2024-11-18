@@ -8,10 +8,12 @@ import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransacti
 import org.jetbrains.exposed.sql.transactions.transaction
 
 @Serializable
-data class ExposedUser(val name: String, val wins: Int, val passcode: String)
+data class User(val name: String, val passcode: String, val wins: Int = 0, val id: Int? = null) {
+    constructor(login: Login) : this(login.username, login.passcode)
+}
 
 class UserService(database: Database) {
-    object Users : Table() {
+    object DBUsers : Table() {
         val id = integer("id").autoIncrement()
         val name = varchar("name", length = 50)
         val passcode = varchar("passcode", length = 50)
@@ -22,28 +24,51 @@ class UserService(database: Database) {
 
     init {
         transaction(database) {
-            SchemaUtils.create(Users)
+            SchemaUtils.create(DBUsers)
         }
     }
 
-    suspend fun create(user: ExposedUser): Int = dbQuery {
-        Users.insert { dbUser ->
+    suspend fun create(user: User): Int = dbQuery {
+        DBUsers.insert { dbUser ->
             dbUser[name] = user.name
+            dbUser[passcode] = user.passcode
             dbUser[wins] = user.wins
-        }[Users.id]
+        }[DBUsers.id]
     }
 
-    suspend fun read(id: Int): ExposedUser? {
+    suspend fun findById(id: Int): User? {
         return dbQuery {
-            Users.select { Users.id eq id }
-                .map { dbUser -> ExposedUser(dbUser[Users.name], dbUser[Users.wins], dbUser[Users.passcode]) }
+            DBUsers.select { DBUsers.id eq id }
+                .map { dbUser ->
+                    User(
+                        dbUser[DBUsers.name],
+                        dbUser[DBUsers.passcode],
+                        dbUser[DBUsers.wins],
+                        dbUser[DBUsers.id]
+                    )
+                }
                 .singleOrNull()
         }
     }
 
-    suspend fun update(id: Int, user: ExposedUser) {
+    suspend fun findByUsername(username: String): User? {
+        return dbQuery {
+            DBUsers.select { DBUsers.name eq username }
+                .map { dbUser ->
+                    User(
+                        dbUser[DBUsers.name],
+                        dbUser[DBUsers.passcode],
+                        dbUser[DBUsers.wins],
+                        dbUser[DBUsers.id]
+                    )
+                }
+                .singleOrNull()
+        }
+    }
+
+    suspend fun update(id: Int, user: User) {
         dbQuery {
-            Users.update({ Users.id eq id }) { dbUser ->
+            DBUsers.update({ DBUsers.id eq id }) { dbUser ->
                 dbUser[name] = user.name
                 dbUser[wins] = user.wins
             }
@@ -52,7 +77,7 @@ class UserService(database: Database) {
 
     suspend fun delete(id: Int) {
         dbQuery {
-            Users.deleteWhere { Users.id.eq(id) }
+            DBUsers.deleteWhere { DBUsers.id.eq(id) }
         }
     }
 

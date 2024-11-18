@@ -1,21 +1,12 @@
 package com.ejebring.cf.plugins
 
-import com.ejebring.cf.ExposedUser
 import com.ejebring.cf.UserService
-import io.ktor.http.*
 import io.ktor.server.application.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
 import org.jetbrains.exposed.sql.*
 
 fun Application.configureDatabases() {
     //install(Resources)
-    val database = Database.connect(
-        url = "jdbc:sqlite:sample.db",
-        driver = "org.sqlite.JDBC",
-    )
-    val userService = UserService(database)
+    /*
     routing {
         // Create user
         post("/users") {
@@ -48,5 +39,5 @@ fun Application.configureDatabases() {
             userService.delete(id)
             call.respond(HttpStatusCode.OK)
         }
-    }
+    }*/
 }
