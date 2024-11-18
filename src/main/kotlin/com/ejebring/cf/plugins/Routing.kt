@@ -49,7 +49,7 @@ fun Application.configureRouting() {
             }
 
             val id = userService.create(User(login))
-            val token = TokenService.newToken(id)
+            val token = TokenService.newToken(id, login.username)
 
             call.respond(HttpStatusCode.OK, token)
         }
@@ -70,7 +70,7 @@ fun Application.configureRouting() {
                 return@post
             }
 
-            val token = TokenService.newToken(user.id!!)
+            val token = TokenService.newToken(user.id!!, user.name)
             call.respond(HttpStatusCode.OK, token)
         }
     }
