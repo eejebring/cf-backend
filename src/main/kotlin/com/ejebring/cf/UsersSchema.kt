@@ -1,16 +1,15 @@
 package com.ejebring.cf
 
 import kotlinx.coroutines.Dispatchers
-import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.javatime.CurrentDateTime
 import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.time.LocalDateTime
 
-@Serializable
-data class User(val name: String, val passcode: String, val wins: Int, val id: Int, val updatedAt: String)
+data class User(val name: String, val passcode: String, val wins: Int, val id: Int, val updatedAt: LocalDateTime)
 
 class UserService(database: Database) {
     object DBUser : Table() {
@@ -45,7 +44,7 @@ class UserService(database: Database) {
                         dbUser[DBUser.passcode],
                         dbUser[DBUser.wins],
                         dbUser[DBUser.id],
-                        dbUser[DBUser.updatedAt].toString()
+                        dbUser[DBUser.updatedAt]
                     )
                 }
                 .singleOrNull()
@@ -61,11 +60,24 @@ class UserService(database: Database) {
                         dbUser[DBUser.passcode],
                         dbUser[DBUser.wins],
                         dbUser[DBUser.id],
-                        dbUser[DBUser.updatedAt].toString()
+                        dbUser[DBUser.updatedAt]
                     )
                 }
                 .singleOrNull()
         }
+    }
+
+    suspend fun allUsers(): List<User> = dbQuery {
+        DBUser.selectAll()
+            .map { dbUser ->
+                User(
+                    dbUser[DBUser.name],
+                    dbUser[DBUser.passcode],
+                    dbUser[DBUser.wins],
+                    dbUser[DBUser.id],
+                    dbUser[DBUser.updatedAt]
+                )
+            }
     }
 
     suspend fun update(id: Int, user: User) {
