@@ -34,6 +34,7 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm")
     implementation("org.jetbrains.exposed:exposed-core:0.53.0")
     implementation("org.jetbrains.exposed:exposed-jdbc:0.53.0")
+    implementation("org.jetbrains.exposed:exposed-java-time:0.53.0")
     implementation("org.xerial:sqlite-jdbc:3.41.2.2")
     implementation("com.h2database:h2:$h2_version")
     implementation("io.ktor:ktor-server-netty-jvm")

@@ -2,7 +2,6 @@ package com.ejebring.cf.plugins
 
 import com.ejebring.cf.Login
 import com.ejebring.cf.TokenService
-import com.ejebring.cf.User
 import com.ejebring.cf.UserService
 import io.ktor.http.*
 import io.ktor.serialization.gson.*
@@ -24,7 +23,7 @@ fun Application.configureRouting() {
     }
 
     val database = Database.connect(
-        url = "jdbc:sqlite:sample.db",
+        url = "jdbc:sqlite:game.db",
         driver = "org.sqlite.JDBC",
     )
     val userService = UserService(database)
@@ -48,7 +47,7 @@ fun Application.configureRouting() {
                 return@post
             }
 
-            val id = userService.create(User(login))
+            val id = userService.create(login)
             val token = TokenService.newToken(id, login.username)
 
             call.respond(HttpStatusCode.OK, token)

@@ -4,47 +4,48 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.javatime.CurrentDateTime
+import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
 
 @Serializable
-data class User(val name: String, val passcode: String, val wins: Int = 0, val id: Int? = null) {
-    constructor(login: Login) : this(login.username, login.passcode)
-}
+data class User(val name: String, val passcode: String, val wins: Int, val id: Int, val updatedAt: String)
 
 class UserService(database: Database) {
-    object DBUsers : Table() {
+    object DBUser : Table() {
         val id = integer("id").autoIncrement()
         val name = varchar("name", length = 50)
         val passcode = varchar("passcode", length = 50)
-        val wins = integer("age")
+        val wins = integer("wins").default(0)
+        val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 
         override val primaryKey = PrimaryKey(id)
     }
 
     init {
         transaction(database) {
-            SchemaUtils.create(DBUsers)
+            SchemaUtils.create(DBUser)
         }
     }
 
-    suspend fun create(user: User): Int = dbQuery {
-        DBUsers.insert { dbUser ->
-            dbUser[name] = user.name
+    suspend fun create(user: Login): Int = dbQuery {
+        DBUser.insert { dbUser ->
+            dbUser[name] = user.username
             dbUser[passcode] = user.passcode
-            dbUser[wins] = user.wins
-        }[DBUsers.id]
+        }[DBUser.id]
     }
 
     suspend fun findById(id: Int): User? {
         return dbQuery {
-            DBUsers.select { DBUsers.id eq id }
+            DBUser.select { DBUser.id eq id }
                 .map { dbUser ->
                     User(
-                        dbUser[DBUsers.name],
-                        dbUser[DBUsers.passcode],
-                        dbUser[DBUsers.wins],
-                        dbUser[DBUsers.id]
+                        dbUser[DBUser.name],
+                        dbUser[DBUser.passcode],
+                        dbUser[DBUser.wins],
+                        dbUser[DBUser.id],
+                        dbUser[DBUser.updatedAt].toString()
                     )
                 }
                 .singleOrNull()
@@ -53,13 +54,14 @@ class UserService(database: Database) {
 
     suspend fun findByUsername(username: String): User? {
         return dbQuery {
-            DBUsers.select { DBUsers.name eq username }
+            DBUser.select { DBUser.name eq username }
                 .map { dbUser ->
                     User(
-                        dbUser[DBUsers.name],
-                        dbUser[DBUsers.passcode],
-                        dbUser[DBUsers.wins],
-                        dbUser[DBUsers.id]
+                        dbUser[DBUser.name],
+                        dbUser[DBUser.passcode],
+                        dbUser[DBUser.wins],
+                        dbUser[DBUser.id],
+                        dbUser[DBUser.updatedAt].toString()
                     )
                 }
                 .singleOrNull()
@@ -68,7 +70,7 @@ class UserService(database: Database) {
 
     suspend fun update(id: Int, user: User) {
         dbQuery {
-            DBUsers.update({ DBUsers.id eq id }) { dbUser ->
+            DBUser.update({ DBUser.id eq id }) { dbUser ->
                 dbUser[name] = user.name
                 dbUser[wins] = user.wins
             }
@@ -77,7 +79,7 @@ class UserService(database: Database) {
 
     suspend fun delete(id: Int) {
         dbQuery {
-            DBUsers.deleteWhere { DBUsers.id.eq(id) }
+            DBUser.deleteWhere { DBUser.id.eq(id) }
         }
     }
 
