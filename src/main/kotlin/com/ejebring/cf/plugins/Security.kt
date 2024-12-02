@@ -2,11 +2,14 @@ package com.ejebring.cf.plugins
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import com.ejebring.cf.JWT_DOMAIN
-import com.ejebring.cf.JWT_SECRET
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
+import java.time.Instant
+
+const val JWT_DOMAIN = "https://cf.ejebring.com/"
+const val JWT_SECRET = "TotallyNotAvailableOnGitHub"
+const val JWT_EXPIRATION: Long = 3600
 
 fun Application.configureSecurity() {
 
@@ -26,4 +29,13 @@ fun Application.configureSecurity() {
             }
         }
     }
+}
+
+fun newToken(userId: Int, username: String): String {
+
+    return JWT.create()
+        .withSubject(username)
+        .withIssuer(JWT_DOMAIN)
+        .withExpiresAt(Instant.now().plusSeconds(JWT_EXPIRATION))
+        .sign(Algorithm.HMAC256(JWT_SECRET))
 }

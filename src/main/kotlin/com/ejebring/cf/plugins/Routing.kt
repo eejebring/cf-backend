@@ -1,7 +1,6 @@
 package com.ejebring.cf.plugins
 
 import com.ejebring.cf.Login
-import com.ejebring.cf.TokenService
 import com.ejebring.cf.User
 import com.ejebring.cf.UserService
 import io.ktor.http.*
@@ -71,7 +70,7 @@ fun Application.configureRouting() {
             }
 
             val id = userService.create(login)
-            val token = TokenService.newToken(id, login.username)
+            val token = newToken(id, login.username)
 
             call.respond(HttpStatusCode.OK, token)
         }
@@ -92,7 +91,7 @@ fun Application.configureRouting() {
                 return@post
             }
 
-            val token = TokenService.newToken(user.id, user.name)
+            val token = newToken(user.id, user.name)
             call.respond(HttpStatusCode.OK, token)
         }
     }
