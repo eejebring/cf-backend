@@ -8,6 +8,7 @@ import io.ktor.http.*
 import io.ktor.serialization.gson.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.request.*
 import io.ktor.server.resources.*
@@ -40,13 +41,18 @@ fun Application.configureRouting() {
             val users = userService.allUsers().map { UserOutputObject(it) }
             call.respond(HttpStatusCode.OK, users)
         }
-        get("/user/{id}") {
-            val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
-            val user = userService.findById(id)
-            if (user != null) {
-                call.respond(HttpStatusCode.OK, UserOutputObject(user))
-            } else {
-                call.respond(HttpStatusCode.NotFound)
+        authenticate("jwt-auth") {
+            get("/user/{id}") {
+                val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
+                val user = userService.findById(id)
+                if (user != null) {
+                    call.respond(
+                        HttpStatusCode.OK,
+                        UserOutputObject(user)
+                    )
+                } else {
+                    call.respond(HttpStatusCode.NotFound)
+                }
             }
         }
         post("/user") {

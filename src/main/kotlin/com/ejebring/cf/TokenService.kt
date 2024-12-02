@@ -3,16 +3,15 @@ package com.ejebring.cf
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 
-object TokenService {
+const val JWT_DOMAIN = "https://cf.ejebring.com/"
+const val JWT_SECRET = "TotallyNotAvailableOnGitHub"
 
-    const val JWT_DOMAIN = "https://cf.ejebring.com/"
-    const val JWT_SECRET = "TotallyNotAvailableOnGitHub"
+object TokenService {
 
     fun newToken(userId: Int, username: String): String {
 
         return JWT.create()
-            .withClaim("userId", userId)
-            .withClaim("username", username)
+            .withSubject(username)
             .withIssuer(JWT_DOMAIN)
             .sign(Algorithm.HMAC256(JWT_SECRET))
     }
