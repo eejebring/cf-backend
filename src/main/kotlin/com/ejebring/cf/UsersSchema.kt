@@ -9,17 +9,16 @@ import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransacti
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.LocalDateTime
 
-data class User(val name: String, val passcode: String, val wins: Int, val id: Int, val updatedAt: LocalDateTime)
+data class User(val name: String, val passcode: String, val wins: Int, val updatedAt: LocalDateTime)
 
 class UserService(database: Database) {
     object DBUser : Table() {
-        val id = integer("id").autoIncrement()
         val name = varchar("name", length = 50)
         val passcode = varchar("passcode", length = 50)
         val wins = integer("wins").default(0)
         val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 
-        override val primaryKey = PrimaryKey(id)
+        override val primaryKey = PrimaryKey(name)
     }
 
     init {
@@ -28,27 +27,11 @@ class UserService(database: Database) {
         }
     }
 
-    suspend fun create(user: Login): Int = dbQuery {
+    suspend fun create(user: Login): String = dbQuery {
         DBUser.insert { dbUser ->
             dbUser[name] = user.username
             dbUser[passcode] = user.passcode
-        }[DBUser.id]
-    }
-
-    suspend fun findById(id: Int): User? {
-        return dbQuery {
-            DBUser.select { DBUser.id eq id }
-                .map { dbUser ->
-                    User(
-                        dbUser[DBUser.name],
-                        dbUser[DBUser.passcode],
-                        dbUser[DBUser.wins],
-                        dbUser[DBUser.id],
-                        dbUser[DBUser.updatedAt]
-                    )
-                }
-                .singleOrNull()
-        }
+        }[DBUser.name]
     }
 
     suspend fun findByUsername(username: String): User? {
@@ -59,7 +42,6 @@ class UserService(database: Database) {
                         dbUser[DBUser.name],
                         dbUser[DBUser.passcode],
                         dbUser[DBUser.wins],
-                        dbUser[DBUser.id],
                         dbUser[DBUser.updatedAt]
                     )
                 }
@@ -74,24 +56,21 @@ class UserService(database: Database) {
                     dbUser[DBUser.name],
                     dbUser[DBUser.passcode],
                     dbUser[DBUser.wins],
-                    dbUser[DBUser.id],
                     dbUser[DBUser.updatedAt]
                 )
             }
     }
 
-    suspend fun update(id: Int, user: User) {
+    suspend fun winIncrement(name: String) {
         dbQuery {
-            DBUser.update({ DBUser.id eq id }) { dbUser ->
-                dbUser[name] = user.name
-                dbUser[wins] = user.wins
+            DBUser.update({ DBUser.name eq name }) { dbUser ->
             }
         }
     }
 
-    suspend fun delete(id: Int) {
+    suspend fun delete(name: String) {
         dbQuery {
-            DBUser.deleteWhere { DBUser.id.eq(id) }
+            DBUser.deleteWhere { DBUser.name.eq(name) }
         }
     }
 

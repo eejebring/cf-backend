@@ -6,8 +6,8 @@ import io.ktor.http.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-suspend fun getUser(call: RoutingCall, userService: UserService, id: Int) {
-    val user = userService.findById(id)
+suspend fun getUser(call: RoutingCall, userService: UserService, name: String) {
+    val user = userService.findByUsername(name)
     if (user != null) {
         call.respond(
             HttpStatusCode.OK,

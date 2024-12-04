@@ -18,8 +18,8 @@ import login
 import org.jetbrains.exposed.sql.Database
 
 @Serializable
-data class UserOutputObject(val id: Int, val name: String, val wins: Int, val updatedAt: String) {
-    constructor(user: User) : this(user.id, user.name, user.wins, user.updatedAt.toString())
+data class UserOutputObject(val name: String, val wins: Int, val updatedAt: String) {
+    constructor(user: User) : this(user.name, user.wins, user.updatedAt.toString())
 }
 
 fun Application.configureRouting() {
@@ -41,9 +41,9 @@ fun Application.configureRouting() {
             val users = userService.allUsers().map { UserOutputObject(it) }
             call.respond(HttpStatusCode.OK, users)
         }
-        get("/user/{id}") {
-            val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
-            getUser(call, userService, id)
+        get("/user/{username}") {
+            val name = call.parameters["username"]?.toString() ?: throw IllegalArgumentException("Invalid ID")
+            getUser(call, userService, name)
         }
         post("/user") {
             newUser(call, userService)
@@ -56,7 +56,7 @@ fun Application.configureRouting() {
             get("/games") {}
             get("/game/{id}") {}
             get("/challenges") {}
-            post("/challenge/{id}") {}
+            post("/challenge/{username}") {}
             post("/move/{gameId}/{column}") {}
         }
     }
