@@ -1,0 +1,44 @@
+package com.ejebring.cf.routes
+
+import com.ejebring.cf.Challenge
+import com.ejebring.cf.ChallengeSchema
+import com.ejebring.cf.UserService
+import io.ktor.http.*
+import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
+
+suspend fun challenge(call: RoutingCall, userService: UserService, challengeService: ChallengeSchema) {
+
+    val challenged =
+        call.parameters["username"]?.toString() ?: throw IllegalArgumentException("Invalid username")
+    val challenger = call.principal<JWTPrincipal>()!!.payload.subject!!
+
+    if (challenger == challenged) {
+        call.respond(HttpStatusCode.BadRequest, "You can't challenge yourself")
+        return
+    }
+
+    if (userService.findByUsername(challenged) == null) {
+        call.respond(HttpStatusCode.BadRequest, "User does not exist")
+        return
+    }
+
+    if (challengeService.getUserChallenges(challenger).any { it.challenged == challenged }) {
+        call.respond(HttpStatusCode.BadRequest, "You have already challenged this user")
+        return
+    }
+
+    val challenge = Challenge(challenger, challenged)
+
+    if (challengeService.getUserChallenges(challenger).any { it.challenger == challenged }) {
+        // TODO: Accept challenge
+        challengeService.remove(challenge)
+        call.respond(HttpStatusCode.OK, "Challenge accepted")
+        return
+    }
+
+    challengeService.create(challenger, challenged)
+    call.respond(HttpStatusCode.Accepted, "Challenge sent")
+}

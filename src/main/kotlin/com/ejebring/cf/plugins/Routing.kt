@@ -1,7 +1,9 @@
 package com.ejebring.cf.plugins
 
+import com.ejebring.cf.ChallengeSchema
 import com.ejebring.cf.User
 import com.ejebring.cf.UserService
+import com.ejebring.cf.routes.challenge
 import com.ejebring.cf.routes.getUser
 import com.ejebring.cf.routes.newUser
 import io.ktor.http.*
@@ -9,6 +11,7 @@ import io.ktor.serialization.gson.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.resources.*
 import io.ktor.server.response.*
@@ -35,6 +38,7 @@ fun Application.configureRouting() {
         driver = "org.sqlite.JDBC",
     )
     val userService = UserService(database)
+    val challengeService = ChallengeSchema(database)
 
     routing {
         get("/users") {
@@ -42,7 +46,7 @@ fun Application.configureRouting() {
             call.respond(HttpStatusCode.OK, users)
         }
         get("/user/{username}") {
-            val name = call.parameters["username"]?.toString() ?: throw IllegalArgumentException("Invalid ID")
+            val name = call.parameters["username"]?.toString() ?: throw IllegalArgumentException("Invalid username")
             getUser(call, userService, name)
         }
         post("/user") {
@@ -55,8 +59,13 @@ fun Application.configureRouting() {
         authenticate("jwt-auth") {
             get("/games") {}
             get("/game/{id}") {}
-            get("/challenges") {}
-            post("/challenge/{username}") {}
+            get("/challenges") {
+                val name = call.principal<JWTPrincipal>()!!.payload.subject!!
+                call.respond(HttpStatusCode.OK, challengeService.getUserChallenges(name))
+            }
+            post("/challenge/{username}") {
+                challenge(call, userService, challengeService)
+            }
             post("/move/{gameId}/{column}") {}
         }
     }

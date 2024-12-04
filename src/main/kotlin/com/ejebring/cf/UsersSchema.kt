@@ -11,15 +11,16 @@ import java.time.LocalDateTime
 
 data class User(val name: String, val passcode: String, val wins: Int, val updatedAt: LocalDateTime)
 
-class UserService(database: Database) {
-    object DBUser : Table() {
-        val name = varchar("name", length = 50)
-        val passcode = varchar("passcode", length = 50)
-        val wins = integer("wins").default(0)
-        val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
+object DBUser : Table() {
+    val name = varchar("name", length = 50)
+    val passcode = varchar("passcode", length = 50)
+    val wins = integer("wins").default(0)
+    val updatedAt = datetime("updated_at").defaultExpression(CurrentDateTime)
 
-        override val primaryKey = PrimaryKey(name)
-    }
+    override val primaryKey = PrimaryKey(name)
+}
+
+class UserService(database: Database) {
 
     init {
         transaction(database) {
@@ -36,7 +37,8 @@ class UserService(database: Database) {
 
     suspend fun findByUsername(username: String): User? {
         return dbQuery {
-            DBUser.select { DBUser.name eq username }
+            DBUser.selectAll()
+                .where { DBUser.name eq username }
                 .map { dbUser ->
                     User(
                         dbUser[DBUser.name],

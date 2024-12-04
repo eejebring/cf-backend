@@ -31,7 +31,7 @@ fun Application.configureSecurity() {
     }
 }
 
-fun newToken(userId: Int, username: String): String {
+fun newToken(username: String): String {
 
     return JWT.create()
         .withSubject(username)

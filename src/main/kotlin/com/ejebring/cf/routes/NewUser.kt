@@ -24,7 +24,7 @@ suspend fun newUser(call: RoutingCall, userService: UserService) {
     }
 
     val id = userService.create(login)
-    val token = newToken(id, login.username)
+    val token = newToken(login.username)
 
     call.respond(HttpStatusCode.OK, token)
 }
