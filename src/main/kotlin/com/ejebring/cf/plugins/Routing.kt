@@ -1,6 +1,7 @@
 package com.ejebring.cf.plugins
 
 import com.ejebring.cf.ChallengeSchema
+import com.ejebring.cf.GameSchema
 import com.ejebring.cf.User
 import com.ejebring.cf.UserService
 import com.ejebring.cf.routes.challenge
@@ -39,6 +40,7 @@ fun Application.configureRouting() {
     )
     val userService = UserService(database)
     val challengeService = ChallengeSchema(database)
+    val gameSchema = GameSchema(database)
 
     routing {
         get("/users") {
@@ -57,16 +59,34 @@ fun Application.configureRouting() {
         }
 
         authenticate("jwt-auth") {
-            get("/games") {}
+            get("/games") {
+                val name = call.principal<JWTPrincipal>()!!.subject!!
+                call.respond(HttpStatusCode.OK, gameSchema.getUserGames(name))
+            }
             get("/game/{id}") {}
             get("/challenges") {
                 val name = call.principal<JWTPrincipal>()!!.payload.subject!!
                 call.respond(HttpStatusCode.OK, challengeService.getUserChallenges(name))
             }
             post("/challenge/{username}") {
-                challenge(call, userService, challengeService)
+                challenge(call, userService, challengeService, gameSchema)
             }
-            post("/move/{gameId}/{column}") {}
+            post("/move/{gameId}/{column}") {
+                val name = call.principal<JWTPrincipal>()!!.subject!!
+                val gameId = call.parameters["gameId"]?.toInt() ?: throw IllegalArgumentException("Invalid gameId")
+                val column = call.parameters["column"]?.toInt() ?: throw IllegalArgumentException("Invalid column")
+
+                var game = gameSchema.getGameById(gameId)
+                try {
+                    game.playMove(column, name)
+                    gameSchema.updateGame(game, gameId)
+                } catch (e: IllegalArgumentException) {
+                    call.respond(HttpStatusCode.BadRequest, e.message ?: "Invalid move")
+                    return@post
+                }
+
+                call.respond(HttpStatusCode.OK, game)
+            }
         }
     }
 }

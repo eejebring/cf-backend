@@ -1,15 +1,18 @@
 package com.ejebring.cf.routes
 
-import com.ejebring.cf.Challenge
-import com.ejebring.cf.ChallengeSchema
-import com.ejebring.cf.UserService
+import com.ejebring.cf.*
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-suspend fun challenge(call: RoutingCall, userService: UserService, challengeService: ChallengeSchema) {
+suspend fun challenge(
+    call: RoutingCall,
+    userService: UserService,
+    challengeService: ChallengeSchema,
+    gameSchema: GameSchema
+) {
 
     val challenged =
         call.parameters["username"]?.toString() ?: throw IllegalArgumentException("Invalid username")
@@ -33,8 +36,8 @@ suspend fun challenge(call: RoutingCall, userService: UserService, challengeServ
     val challenge = Challenge(challenger, challenged)
 
     if (challengeService.getUserChallenges(challenger).any { it.challenger == challenged }) {
-        // TODO: Accept challenge
         challengeService.remove(challenge)
+        gameSchema.create(Game(challenger, challenged))
         call.respond(HttpStatusCode.OK, "Challenge accepted")
         return
     }

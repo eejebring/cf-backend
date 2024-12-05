@@ -9,7 +9,6 @@ import io.ktor.server.routing.*
 
 suspend fun login(call: RoutingCall, userService: UserService) {
     val login = call.receive<Login>()
-    println("Login: ${login.username} ${login.passcode}")
     try {
         login.validate()
     } catch (e: IllegalArgumentException) {

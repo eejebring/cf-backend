@@ -9,8 +9,9 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 suspend fun newUser(call: RoutingCall, userService: UserService) {
-    val login = try {
-        call.receive<Login>()
+    val login = call.receive<Login>()
+    try {
+        login.validate()
     } catch (e: IllegalArgumentException) {
         call.respond(HttpStatusCode.BadRequest, e.message ?: "Invalid user")
         return
