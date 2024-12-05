@@ -29,9 +29,9 @@ class Game(
             val currentPiece = if (redPlayedLast) 'r' else 'y'
             if (board[index] == 'n') {
                 board = board.substring(0, index) + currentPiece + board.substring(index + 1)
+                redPlayedLast = !redPlayedLast
                 return
             }
         }
-        redPlayedLast = !redPlayedLast
     }
 }

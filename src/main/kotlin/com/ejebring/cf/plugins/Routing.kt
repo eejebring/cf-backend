@@ -79,6 +79,7 @@ fun Application.configureRouting() {
                 var game = gameSchema.getGameById(gameId)
                 try {
                     game.playMove(column, name)
+                    println("isRedTurn: ${game.redPlayedLast}")
                     gameSchema.updateGame(game, gameId)
                 } catch (e: IllegalArgumentException) {
                     call.respond(HttpStatusCode.BadRequest, e.message ?: "Invalid move")
