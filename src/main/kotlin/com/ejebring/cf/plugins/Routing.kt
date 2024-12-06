@@ -63,7 +63,10 @@ fun Application.configureRouting() {
                 val name = call.principal<JWTPrincipal>()!!.subject!!
                 call.respond(HttpStatusCode.OK, gameSchema.getUserGames(name))
             }
-            get("/game/{id}") {}
+            get("/game/{id}") {
+                val gameId = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid gameId")
+                call.respond(HttpStatusCode.OK, gameSchema.getGameById(gameId))
+            }
             get("/challenges") {
                 val name = call.principal<JWTPrincipal>()!!.payload.subject!!
                 call.respond(HttpStatusCode.OK, challengeService.getUserChallenges(name))
