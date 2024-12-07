@@ -76,6 +76,14 @@ class UserService(database: Database) {
         }
     }
 
+    suspend fun updateTime(name: String) {
+        dbQuery {
+            DBUser.update({ DBUser.name eq name }) {
+                it[updatedAt] = LocalDateTime.now()
+            }
+        }
+    }
+
     private suspend fun <T> dbQuery(block: suspend () -> T): T =
         newSuspendedTransaction(Dispatchers.IO) { block() }
 }

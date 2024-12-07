@@ -2,6 +2,7 @@ package com.ejebring.cf.plugins
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import com.ejebring.cf.UserService
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
@@ -25,7 +26,10 @@ fun Application.configureSecurity() {
                     .build()
             )
             validate { credential ->
-                if (credential.payload.issuer.contains(JWT_DOMAIN)) JWTPrincipal(credential.payload) else null
+                if (credential.payload.issuer.contains(JWT_DOMAIN)) {
+
+                    JWTPrincipal(credential.payload)
+                } else null
             }
         }
     }
@@ -38,4 +42,10 @@ fun newToken(username: String): String {
         .withIssuer(JWT_DOMAIN)
         .withExpiresAt(Instant.now().plusSeconds(JWT_EXPIRATION))
         .sign(Algorithm.HMAC256(JWT_SECRET))
+}
+
+suspend fun getLoggedInUser(call: ApplicationCall, userService: UserService): String {
+    val user = call.principal<JWTPrincipal>()!!.payload.subject!!
+    userService.updateTime(user)
+    return user
 }

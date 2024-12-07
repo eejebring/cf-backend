@@ -12,7 +12,6 @@ import io.ktor.serialization.gson.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.resources.*
 import io.ktor.server.response.*
@@ -60,7 +59,7 @@ fun Application.configureRouting() {
 
         authenticate("jwt-auth") {
             get("/games") {
-                val name = call.principal<JWTPrincipal>()!!.subject!!
+                val name = getLoggedInUser(call, userService)
                 call.respond(HttpStatusCode.OK, gameSchema.getUserGames(name))
             }
             get("/game/{id}") {
@@ -68,14 +67,14 @@ fun Application.configureRouting() {
                 call.respond(HttpStatusCode.OK, gameSchema.getGameById(gameId))
             }
             get("/challenges") {
-                val name = call.principal<JWTPrincipal>()!!.payload.subject!!
+                val name = getLoggedInUser(call, userService)
                 call.respond(HttpStatusCode.OK, challengeService.getUserChallenges(name))
             }
             post("/challenge/{username}") {
                 challenge(call, userService, challengeService, gameSchema)
             }
             post("/move/{gameId}/{column}") {
-                val name = call.principal<JWTPrincipal>()!!.subject!!
+                val name = getLoggedInUser(call, userService)
                 val gameId = call.parameters["gameId"]?.toInt() ?: throw IllegalArgumentException("Invalid gameId")
                 val column = call.parameters["column"]?.toInt() ?: throw IllegalArgumentException("Invalid column")
 

@@ -1,9 +1,8 @@
 package com.ejebring.cf.routes
 
 import com.ejebring.cf.*
+import com.ejebring.cf.plugins.getLoggedInUser
 import io.ktor.http.*
-import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
@@ -16,7 +15,7 @@ suspend fun challenge(
 
     val challenged =
         call.parameters["username"]?.toString() ?: throw IllegalArgumentException("Invalid username")
-    val challenger = call.principal<JWTPrincipal>()!!.payload.subject!!
+    val challenger = getLoggedInUser(call, userService)
 
     if (challenger == challenged) {
         call.respond(HttpStatusCode.BadRequest, "You can't challenge yourself")
