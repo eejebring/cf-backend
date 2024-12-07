@@ -52,7 +52,7 @@ class UserService(database: Database) {
     }
 
     suspend fun allUsers(): List<User> = dbQuery {
-        DBUser.selectAll()
+        DBUser.selectAll().orderBy(DBUser.name to SortOrder.ASC)
             .map { dbUser ->
                 User(
                     dbUser[DBUser.name],
