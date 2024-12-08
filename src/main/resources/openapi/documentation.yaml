@@ -6,82 +6,209 @@ info:
 servers:
 - url: "https://cf_backend"
 paths:
-  /users:
+  /challenge/{username}:
     post:
-      description: "Create user"
+      description: ""
+      parameters:
+      - name: "username"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+      responses:
+        "400":
+          description: "Bad Request"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+              examples:
+                Example#1:
+                  value: "You have already challenged this user"
+                Example#2:
+                  value: "User does not exist"
+                Example#3:
+                  value: "You can't challenge yourself"
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+              examples:
+                Example#1:
+                  value: "Challenge accepted"
+        "202":
+          description: "Accepted"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+              examples:
+                Example#1:
+                  value: "Challenge sent"
+  /challenges:
+    get:
+      description: ""
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/Challenge"
+  /game/{id}:
+    get:
+      description: ""
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        schema:
+          type: "integer"
+      responses:
+        "400":
+          description: "Bad Request"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+              examples:
+                Example#1:
+                  value: "You are not a player in this game"
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Game"
+  /games:
+    get:
+      description: ""
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "array"
+                items:
+                  type: "integer"
+                  format: "int32"
+  /login:
+    post:
+      description: ""
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ExposedUser"
+              $ref: "#/components/schemas/Login"
         required: true
       responses:
-        "201":
-          description: "Created"
+        "400":
+          description: "Bad Request"
           content:
             '*/*':
               schema:
-                type: "integer"
-                format: "int32"
-  /users/{id}:
-    delete:
-      description: "Delete user"
-      parameters:
-      - name: "id"
-        in: "path"
-        required: true
-        schema:
-          type: "integer"
-      responses:
+                type: "string"
+        "401":
+          description: "Unauthorized"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+              examples:
+                Example#1:
+                  value: "Incorrect username or password"
         "200":
           description: "OK"
           content:
             '*/*':
               schema:
-                type: "object"
+                type: "string"
+  /move/{gameId}/{column}:
+    post:
+      description: ""
+      parameters:
+      - name: "gameId"
+        in: "path"
+        required: true
+        schema:
+          type: "integer"
+      - name: "column"
+        in: "path"
+        required: true
+        schema:
+          type: "integer"
+      responses:
+        "400":
+          description: "Bad Request"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Game"
+  /user:
+    post:
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Login"
+        required: true
+      responses:
+        "400":
+          description: "Bad Request"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+        "409":
+          description: "Conflict"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+              examples:
+                Example#1:
+                  value: "User already exists"
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+  /user/{username}:
     get:
-      description: "Read user"
+      description: ""
       parameters:
-      - name: "id"
+      - name: "username"
         in: "path"
         required: true
         schema:
-          type: "integer"
+          type: "string"
       responses:
         "200":
           description: "OK"
           content:
             '*/*':
               schema:
-                $ref: "#/components/schemas/ExposedUser"
+                $ref: "#/components/schemas/UserOutputObject"
         "404":
           description: "Not Found"
           content:
             '*/*':
               schema:
                 type: "object"
-    put:
-      description: "Update user"
-      parameters:
-      - name: "id"
-        in: "path"
-        required: true
-        schema:
-          type: "integer"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ExposedUser"
-        required: true
-      responses:
-        "200":
-          description: "OK"
-          content:
-            '*/*':
-              schema:
-                type: "object"
-  /json/gson:
+  /users:
     get:
       description: ""
       responses:
@@ -90,63 +217,57 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: "#/components/schemas/Map_String"
-  /json/kotlinx-serialization:
-    get:
-      description: ""
-      responses:
-        "200":
-          description: "OK"
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/Map_String"
-  /:
-    get:
-      description: ""
-      responses:
-        "200":
-          description: "OK"
-          content:
-            text/plain:
-              schema:
-                type: "string"
-              examples:
-                Example#1:
-                  value: "Hello World!"
-  /articles:
-    get:
-      description: ""
-      parameters:
-      - name: "sort"
-        in: "query"
-        required: false
-        schema:
-          type: "string"
-      responses:
-        "200":
-          description: "OK <br> Get all articles ..."
-          content:
-            '*/*':
-              schema:
-                type: "string"
-              examples:
-                Example#1:
-                  value: ""
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/UserOutputObject"
 components:
   schemas:
-    ExposedUser:
+    Challenge:
+      type: "object"
+      properties:
+        challenger:
+          type: "string"
+        challenged:
+          type: "string"
+      required:
+      - "challenger"
+      - "challenged"
+    Game:
+      type: "object"
+      properties:
+        redPlayer:
+          type: "string"
+        yellowPlayer:
+          type: "string"
+        winner:
+          type: "string"
+        board:
+          type: "string"
+      required:
+      - "redPlayer"
+      - "yellowPlayer"
+      - "winner"
+      - "board"
+    Login:
+      type: "object"
+      properties:
+        username:
+          type: "string"
+        passcode:
+          type: "string"
+      required:
+      - "username"
+      - "passcode"
+    UserOutputObject:
       type: "object"
       properties:
         name:
           type: "string"
-        age:
+        wins:
           type: "integer"
           format: "int32"
+        updatedAt:
+          type: "string"
       required:
       - "name"
-    Map:
-      type: "object"
-      properties: {}
-    Map_String:
-      type: "string"
+      - "updatedAt"
