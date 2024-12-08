@@ -55,6 +55,8 @@ class Game(
 
         if (winnableSlices.any { it.contains(winningPattern) }) {
             winner = if (isRedTurn) redPlayer else yellowPlayer
+        } else if (!board.contains("n")) {
+            winner = "NONE"
         }
     }
 
