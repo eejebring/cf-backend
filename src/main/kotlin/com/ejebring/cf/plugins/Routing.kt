@@ -6,6 +6,7 @@ import com.ejebring.cf.User
 import com.ejebring.cf.UserService
 import com.ejebring.cf.routes.challenge
 import com.ejebring.cf.routes.getUser
+import com.ejebring.cf.routes.makeMove
 import com.ejebring.cf.routes.newUser
 import io.ktor.http.*
 import io.ktor.serialization.gson.*
@@ -80,21 +81,7 @@ fun Application.configureRouting() {
                 challenge(call, userService, challengeService, gameSchema)
             }
             post("/move/{gameId}/{column}") {
-                val name = getLoggedInUser(call, userService)
-                val gameId = call.parameters["gameId"]?.toInt() ?: throw IllegalArgumentException("Invalid gameId")
-                val column = call.parameters["column"]?.toInt() ?: throw IllegalArgumentException("Invalid column")
-
-                var game = gameSchema.getGameById(gameId)
-                try {
-                    game.playMove(column, name)
-                    println("isRedTurn: ${game.isRedTurn}")
-                    gameSchema.updateGame(game, gameId)
-                } catch (e: IllegalArgumentException) {
-                    call.respond(HttpStatusCode.BadRequest, e.message ?: "Invalid move")
-                    return@post
-                }
-
-                call.respond(HttpStatusCode.OK, game)
+                makeMove(call, gameSchema, userService)
             }
         }
     }
