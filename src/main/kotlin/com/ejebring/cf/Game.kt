@@ -10,12 +10,12 @@ class Game(
 
     val redPlayer: String,
     val yellowPlayer: String,
-    var redPlayedLast: Boolean = false,
+    var isRedTurn: Boolean = false,
     var winner: String = "TBD",
     var board: String = "n".repeat(42)
 ) {
     fun playMove(column: Int, playerName: String) {
-        val currentPlayer = if (redPlayedLast) yellowPlayer else redPlayer
+        val currentPlayer = if (isRedTurn) redPlayer else yellowPlayer
 
         if (winner != "TBD") {
             throw IllegalArgumentException("Game is already finished")
@@ -32,18 +32,18 @@ class Game(
 
         for (row in rowStarts) {
             val index = row + column
-            val currentPiece = if (redPlayedLast) 'r' else 'y'
+            val currentPiece = if (isRedTurn) 'r' else 'y'
             if (board[index] == 'n') {
                 board = board.substring(0, index) + currentPiece + board.substring(index + 1)
-                redPlayedLast = !redPlayedLast
                 checkWinCondition(index)
+                isRedTurn = !isRedTurn
                 return
             }
         }
     }
 
     private fun checkWinCondition(placedPiece: Int) {
-        val placedColour = if (redPlayedLast) "r" else "y"
+        val placedColour = if (isRedTurn) "r" else "y"
         val winningPattern = placedColour.repeat(4)
 
         val winnableSlices = listOf(
@@ -57,13 +57,14 @@ class Game(
         val positiveDiagonalSlice = positiveDiagonalSlicer(placedPiece)
         val negativeDiagonalSlice = negativeDiagonalSlicer(placedPiece)
 
+        println(winningPattern + "------------------")
         println(verticalSlice + verticalSlice.contains(winningPattern))
         println(horizontalSlice + horizontalSlice.contains(winningPattern))
         println(positiveDiagonalSlice + positiveDiagonalSlice.contains(winningPattern))
         println(negativeDiagonalSlice + negativeDiagonalSlice.contains(winningPattern))
 
         if (winnableSlices.any { it.contains(winningPattern) }) {
-            winner = if (redPlayedLast) redPlayer else yellowPlayer
+            winner = if (isRedTurn) redPlayer else yellowPlayer
         }
 
         println("Winner: $winner")

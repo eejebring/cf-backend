@@ -7,7 +7,7 @@ object DBGame : Table() {
     val id = integer("id").autoIncrement()
     val redPlayer = varchar("red", length = 50) references DBUser.name
     val yellowPlayer = varchar("yellow", length = 50) references DBUser.name
-    val redPlayedLast = bool("redPlayedLast")
+    val isRedTurn = bool("isRedTurn")
     val winner = varchar("winner", length = 50).default("TBD")
     val board = varchar("board", length = 42)
 
@@ -27,7 +27,7 @@ class GameSchema(database: Database) {
             DBGame.insert {
                 it[redPlayer] = game.redPlayer
                 it[yellowPlayer] = game.yellowPlayer
-                it[redPlayedLast] = game.redPlayedLast
+                it[isRedTurn] = game.isRedTurn
                 it[winner] = game.winner
                 it[board] = game.board
             } get DBGame.id
@@ -52,7 +52,7 @@ class GameSchema(database: Database) {
                     Game(
                         it[DBGame.redPlayer],
                         it[DBGame.yellowPlayer],
-                        it[DBGame.redPlayedLast],
+                        it[DBGame.isRedTurn],
                         it[DBGame.winner],
                         it[DBGame.board]
                     )
@@ -64,7 +64,7 @@ class GameSchema(database: Database) {
     suspend fun updateGame(game: Game, id: Int) {
         transaction {
             DBGame.update({ DBGame.id eq id }) {
-                it[redPlayedLast] = game.redPlayedLast
+                it[isRedTurn] = game.isRedTurn
                 it[winner] = game.winner
                 it[board] = game.board
             }
