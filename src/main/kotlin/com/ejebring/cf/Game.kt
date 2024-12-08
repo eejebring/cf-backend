@@ -52,22 +52,10 @@ class Game(
             positiveDiagonalSlicer(placedPiece),
             negativeDiagonalSlicer(placedPiece)
         )
-        val verticalSlice = verticalSlicer(placedPiece)
-        val horizontalSlice = horizontalSlicer(placedPiece)
-        val positiveDiagonalSlice = positiveDiagonalSlicer(placedPiece)
-        val negativeDiagonalSlice = negativeDiagonalSlicer(placedPiece)
-
-        println(winningPattern + "------------------")
-        println(verticalSlice + verticalSlice.contains(winningPattern))
-        println(horizontalSlice + horizontalSlice.contains(winningPattern))
-        println(positiveDiagonalSlice + positiveDiagonalSlice.contains(winningPattern))
-        println(negativeDiagonalSlice + negativeDiagonalSlice.contains(winningPattern))
 
         if (winnableSlices.any { it.contains(winningPattern) }) {
             winner = if (isRedTurn) redPlayer else yellowPlayer
         }
-
-        println("Winner: $winner")
     }
 
     private fun verticalSlicer(placedPiece: Int): String {

@@ -65,7 +65,10 @@ class UserService(database: Database) {
 
     suspend fun winIncrement(name: String) {
         dbQuery {
-            DBUser.update({ DBUser.name eq name }) { dbUser ->
+            DBUser.update({ DBUser.name eq name }) {
+                with(SqlExpressionBuilder) {
+                    it.update(wins, wins + 1)
+                }
             }
         }
     }
