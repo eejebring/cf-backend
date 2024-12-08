@@ -36,7 +36,7 @@ suspend fun challenge(
 
     if (challengeService.getUserChallenges(challenger).any { it.challenger == challenged }) {
         challengeService.remove(challenge)
-        gameSchema.create(Game(challenger, challenged))
+        gameSchema.create(Game(challenged, challenger))
         call.respond(HttpStatusCode.OK, "Challenge accepted")
         return
     }
