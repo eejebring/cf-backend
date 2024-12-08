@@ -8,7 +8,7 @@ object DBGame : Table() {
     val redPlayer = varchar("red", length = 50) references DBUser.name
     val yellowPlayer = varchar("yellow", length = 50) references DBUser.name
     val redPlayedLast = bool("redPlayedLast")
-    val isFinished = bool("isFinished")
+    val winner = varchar("winner", length = 50).default("TBD")
     val board = varchar("board", length = 42)
 
     override val primaryKey = PrimaryKey(id)
@@ -28,7 +28,7 @@ class GameSchema(database: Database) {
                 it[redPlayer] = game.redPlayer
                 it[yellowPlayer] = game.yellowPlayer
                 it[redPlayedLast] = game.redPlayedLast
-                it[isFinished] = game.isFinished
+                it[winner] = game.winner
                 it[board] = game.board
             } get DBGame.id
         }
@@ -53,7 +53,7 @@ class GameSchema(database: Database) {
                         it[DBGame.redPlayer],
                         it[DBGame.yellowPlayer],
                         it[DBGame.redPlayedLast],
-                        it[DBGame.isFinished],
+                        it[DBGame.winner],
                         it[DBGame.board]
                     )
                 }
@@ -65,7 +65,7 @@ class GameSchema(database: Database) {
         transaction {
             DBGame.update({ DBGame.id eq id }) {
                 it[redPlayedLast] = game.redPlayedLast
-                it[isFinished] = game.isFinished
+                it[winner] = game.winner
                 it[board] = game.board
             }
         }

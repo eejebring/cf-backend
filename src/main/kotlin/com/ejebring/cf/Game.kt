@@ -3,21 +3,21 @@ package com.ejebring.cf
 val rowStarts = intArrayOf(35, 28, 21, 14, 7, 0)
 const val nrOfColumns = 7
 const val nrOfRows = 6
-val columnRange = 0..nrOfColumns
+val columnRange = 0..<nrOfColumns
 
 // Board is a string of 42 characters, each representing a cell in the Connect Four board. y for yellow and r for red n for none.
 class Game(
 
     val redPlayer: String,
     val yellowPlayer: String,
-    var redPlayedLast: Boolean = true,
-    var isFinished: Boolean = false,
+    var redPlayedLast: Boolean = false,
+    var winner: String = "TBD",
     var board: String = "n".repeat(42)
 ) {
     fun playMove(column: Int, playerName: String) {
         val currentPlayer = if (redPlayedLast) yellowPlayer else redPlayer
 
-        if (isFinished) {
+        if (winner != "TBD") {
             throw IllegalArgumentException("Game is already finished")
         }
         if (playerName != currentPlayer) {
@@ -43,16 +43,30 @@ class Game(
     }
 
     private fun checkWinCondition(placedPiece: Int) {
+        val placedColour = if (redPlayedLast) "r" else "y"
+        val winningPattern = placedColour.repeat(4)
 
+        val winnableSlices = listOf(
+            verticalSlicer(placedPiece),
+            horizontalSlicer(placedPiece),
+            positiveDiagonalSlicer(placedPiece),
+            negativeDiagonalSlicer(placedPiece)
+        )
         val verticalSlice = verticalSlicer(placedPiece)
         val horizontalSlice = horizontalSlicer(placedPiece)
         val positiveDiagonalSlice = positiveDiagonalSlicer(placedPiece)
         val negativeDiagonalSlice = negativeDiagonalSlicer(placedPiece)
 
-        println(verticalSlice)
-        println(horizontalSlice)
-        println(positiveDiagonalSlice)
-        println(negativeDiagonalSlice)
+        println(verticalSlice + verticalSlice.contains(winningPattern))
+        println(horizontalSlice + horizontalSlice.contains(winningPattern))
+        println(positiveDiagonalSlice + positiveDiagonalSlice.contains(winningPattern))
+        println(negativeDiagonalSlice + negativeDiagonalSlice.contains(winningPattern))
+
+        if (winnableSlices.any { it.contains(winningPattern) }) {
+            winner = if (redPlayedLast) redPlayer else yellowPlayer
+        }
+
+        println("Winner: $winner")
     }
 
     private fun verticalSlicer(placedPiece: Int): String {
@@ -71,12 +85,11 @@ class Game(
 
         var diagonal = ""
         var cursor = pieceColumn + pieceRow + 1 - nrOfRows
+
         for (rowStart in rowStarts) {
-            if (cursor <= 0 || cursor > nrOfColumns) {
-                cursor += 1
-                continue
+            if ((0..(nrOfColumns - 1)).contains(cursor)) {
+                diagonal += board.slice(rowStart..(rowStart + nrOfColumns - 1))[cursor]
             }
-            diagonal += board.slice(rowStart..(rowStart + nrOfColumns - 1))[cursor]
             cursor += 1
         }
 
@@ -89,12 +102,11 @@ class Game(
 
         var diagonal = ""
         var cursor = pieceColumn - pieceRow - 1 + nrOfRows
+
         for (rowStart in rowStarts) {
-            if (cursor < 0 || cursor >= nrOfColumns) {
-                cursor -= 1
-                continue
+            if ((0..(nrOfColumns - 1)).contains(cursor)) {
+                diagonal += board.slice(rowStart..(rowStart + nrOfColumns - 1))[cursor]
             }
-            diagonal += board.slice(rowStart..(rowStart + nrOfColumns - 1))[cursor]
             cursor -= 1
         }
 

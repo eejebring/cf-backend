@@ -63,7 +63,13 @@ fun Application.configureRouting() {
                 call.respond(HttpStatusCode.OK, gameSchema.getUserGames(name))
             }
             get("/game/{id}") {
+                val name = getLoggedInUser(call, userService)
                 val gameId = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid gameId")
+
+                if (!gameSchema.getUserGames(name).contains(gameId)) {
+                    call.respond(HttpStatusCode.BadRequest, "You are not a player in this game")
+                    return@get
+                }
                 call.respond(HttpStatusCode.OK, gameSchema.getGameById(gameId))
             }
             get("/challenges") {
